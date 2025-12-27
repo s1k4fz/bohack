@@ -1,26 +1,36 @@
+import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { Activity, Clock, Cpu, CheckCircle2, AlertCircle, Box } from 'lucide-react'
+import { useTasks } from '@/contexts/TaskContext'
+import type { TaskStatus } from '@/contexts/TaskContext'
+import { useEffect, useState } from 'react'
 
-// Mock Data Types
-type TaskStatus = 'running' | 'queued' | 'analyzing' | 'completed' | 'failed'
+// Live Duration Component
+function TaskDuration({ createdAt }: { createdAt: string }) {
+  const [duration, setDuration] = useState('')
 
-interface Task {
-  id: string
-  name: string
-  status: TaskStatus
-  progress: number
-  timeElapsed: string
+  useEffect(() => {
+    const update = () => {
+      const start = new Date(createdAt).getTime()
+      const now = Date.now()
+      const diff = Math.max(0, now - start)
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+      
+      const str = hours > 0 
+        ? `${hours}h ${minutes}m ${seconds}s`
+        : `${minutes}m ${seconds}s`
+      setDuration(str)
+    }
+    update()
+    const timer = setInterval(update, 1000)
+    return () => clearInterval(timer)
+  }, [createdAt])
+
+  return <span>{duration}</span>
 }
-
-// Mock Data
-const MOCK_TASKS: Task[] = [
-  { id: 'T-8821', name: '二氧化碳还原-Alpha', status: 'running', progress: 45, timeElapsed: '12m 30s' },
-  { id: 'T-8822', name: '催化剂寻优-Beta', status: 'analyzing', progress: 88, timeElapsed: '45m 10s' },
-  { id: 'T-8823', name: '伊辛模型映射-Gamma', status: 'queued', progress: 0, timeElapsed: '0s' },
-  { id: 'T-8820', name: '预检-Delta', status: 'completed', progress: 100, timeElapsed: '1h 20m' },
-  { id: 'T-8819', name: '容错测试-Epsilon', status: 'failed', progress: 12, timeElapsed: '2m 15s' },
-  { id: 'T-8824', name: '等待调度-Zeta', status: 'queued', progress: 0, timeElapsed: '0s' },
-]
 
 // Status Configuration
 const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string; icon: any }> = {
@@ -52,9 +62,10 @@ const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string; icon: an
 }
 
 export function ActiveTasksCard() {
-  const tasks = MOCK_TASKS.filter(t => t.status !== 'completed')
+  const navigate = useNavigate()
+  const { runningTasks } = useTasks()
 
-  if (tasks.length === 0) {
+  if (runningTasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-3 text-zinc-600">
         <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center">
@@ -67,14 +78,15 @@ export function ActiveTasksCard() {
 
   return (
     <div className="flex flex-col h-full">
-      {tasks.map((task) => {
-        const config = STATUS_CONFIG[task.status]
+      {runningTasks.map((task) => {
+        const config = STATUS_CONFIG[task.status] || STATUS_CONFIG['queued']
         const Icon = config.icon
 
         return (
           <div 
             key={task.id}
-            className="group flex items-center justify-between p-4 border-b border-zinc-900/50 last:border-0 hover:bg-zinc-900/30 transition-colors"
+            onClick={() => navigate(`/dashboard/task/${task.id}`)}
+            className="group flex items-center justify-between p-4 border-b border-zinc-900/50 last:border-0 hover:bg-zinc-900/30 transition-colors cursor-pointer"
           >
             {/* Left: ID & Name */}
             <div className="flex flex-col gap-1 min-w-0">
@@ -89,9 +101,11 @@ export function ActiveTasksCard() {
                   </span>
                 )}
               </div>
-              <span className="text-xs text-zinc-500 truncate font-medium group-hover:text-zinc-400 transition-colors">
-                {task.name}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xs text-zinc-500 truncate font-medium group-hover:text-zinc-400 transition-colors">
+                    {task.name}
+                </span>
+              </div>
             </div>
 
             {/* Right: Status & Info */}
@@ -100,7 +114,7 @@ export function ActiveTasksCard() {
               <div className="text-right hidden sm:block">
                 <div className="text-[10px] font-mono text-zinc-500">
                   {task.status === 'running' || task.status === 'analyzing' 
-                    ? `${task.progress}%` 
+                    ? <TaskDuration createdAt={task.createdAt} />
                     : task.timeElapsed}
                 </div>
               </div>

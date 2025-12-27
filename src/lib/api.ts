@@ -29,6 +29,7 @@ export async function createOptimizationTask(taskName: string, templateId: strin
   let template = 'balanced';
   if (templateId === 'tmpl-002') template = 'precision';
   if (templateId === 'tmpl-003') template = 'speed';
+  if (templateId === 'tmpl-006') template = 'safe';
   
   try {
     const response = await fetch(`${API_BASE_URL}/optimize`, {

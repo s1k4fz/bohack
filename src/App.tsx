@@ -1,6 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout'
 import { OverviewPage } from '@/features/dashboard/pages/OverviewPage'
+import { TaskDetailPage } from '@/features/dashboard/pages/TaskDetailPage'
+import { HistoryDetailPage } from '@/features/dashboard/pages/HistoryDetailPage'
+import { TaskProvider } from '@/contexts/TaskContext'
+import { TemplateProvider } from '@/contexts/TemplateContext'
 
 // 占位页面
 function PlaceholderPage({ title }: { title: string }) {
@@ -16,15 +20,24 @@ function PlaceholderPage({ title }: { title: string }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<OverviewPage />} />
-          <Route path="settings" element={<PlaceholderPage title="设置" />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <TaskProvider>
+      <TemplateProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route index element={<OverviewPage />} />
+              {/* 运行中任务详情页 */}
+              <Route path="task/:taskId" element={<TaskDetailPage />} />
+              {/* 已完成任务详情页 */}
+              <Route path="history/:taskId" element={<HistoryDetailPage />} />
+              {/* 设置页面 */}
+              <Route path="settings" element={<PlaceholderPage title="设置" />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </TemplateProvider>
+    </TaskProvider>
   )
 }
 
