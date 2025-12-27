@@ -1,14 +1,23 @@
 import { cn } from '@/lib/utils'
+import { NewTaskCard } from '../components/NewTaskCard'
+import { ActiveTasksCard } from '../components/ActiveTasksCard'
+import { HistoryTasksCard } from '../components/HistoryTasksCard'
+import { ImpactLedgerCard } from '../components/ImpactLedgerCard'
+import { AgentLiveLogsCard } from '../components/AgentLiveLogsCard'
+import { ParameterTemplatesCard } from '../components/ParameterTemplatesCard'
+import { AiChatCard } from '../components/AiChatCard'
 
 // 通用卡片容器组件
 function DashboardCard({ 
   className, 
   title,
-  children 
+  children,
+  noPadding = false
 }: { 
   className?: string
   title?: string
   children?: React.ReactNode 
+  noPadding?: boolean
 }) {
   return (
     <div
@@ -22,7 +31,7 @@ function DashboardCard({
           <span className="text-[15px] font-semibold text-zinc-100 tracking-tight">{title}</span>
         </div>
       )}
-      <div className="flex-1 min-h-0 px-4 pb-4 overflow-y-auto stock-scroll">
+      <div className={cn("flex-1 min-h-0 overflow-y-auto stock-scroll", !noPadding && "px-4 pb-4")}>
         {children || (
           <div className="flex items-center justify-center h-full text-zinc-600 text-sm">
             内容区域
@@ -44,42 +53,62 @@ export function OverviewPage() {
       )}
     >
       {/* 左上两张方卡 */}
+      {/* 1. 新建任务 (New Task) - 2x2 格子中的左上角 */}
+      <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2">
+        <NewTaskCard />
+      </div>
+
       <DashboardCard 
-        title="卡片 1" 
-        className="lg:col-start-1 lg:row-start-1 lg:row-span-2" 
-      />
-      <DashboardCard 
-        title="卡片 2" 
+        title="活跃任务" 
         className="lg:col-start-2 lg:row-start-1 lg:row-span-2" 
-      />
+        noPadding={true}
+      >
+        <ActiveTasksCard />
+      </DashboardCard>
 
       {/* 右上长卡（跨三行） */}
       <DashboardCard 
-        title="卡片 3" 
+        title="Agent 运行日志" 
         className="lg:col-start-3 lg:row-start-1 lg:row-span-3" 
-      />
+        noPadding={true}
+      >
+        <AgentLiveLogsCard />
+      </DashboardCard>
 
       {/* 左中两张方卡 */}
       <DashboardCard 
-        title="卡片 4" 
+        title="历史任务" 
         className="lg:col-start-1 lg:row-start-3 lg:row-span-2" 
-      />
+        noPadding={true}
+      >
+        <HistoryTasksCard />
+      </DashboardCard>
+      
       <DashboardCard 
-        title="卡片 5" 
+        title="商业价值看板" 
         className="lg:col-start-2 lg:row-start-3 lg:row-span-2" 
-      />
+        noPadding={true}
+      >
+        <ImpactLedgerCard />
+      </DashboardCard>
 
       {/* 右下长卡（与上方长卡等高） */}
       <DashboardCard 
-        title="卡片 6" 
+        title="AI 对话" 
         className="lg:col-start-3 lg:row-start-4 lg:row-span-3" 
-      />
+        noPadding={true}
+      >
+        <AiChatCard />
+      </DashboardCard>
 
       {/* 底部横向宽卡（跨两列） */}
       <DashboardCard 
-        title="卡片 7" 
+        title="预设参数模板库" 
         className="lg:col-start-1 lg:col-span-2 lg:row-start-5 lg:row-span-2" 
-      />
+        noPadding={true}
+      >
+        <ParameterTemplatesCard />
+      </DashboardCard>
     </div>
   )
 }
